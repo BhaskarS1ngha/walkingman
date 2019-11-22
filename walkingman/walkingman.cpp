@@ -48,14 +48,18 @@ public:
 
 class man : public DrawingObject {
 public:
-	man(float cx, float cy=270, float r=5,int  numSegments=10) :DrawingObject(cx, cy) {
+	man(float cx=100, float cy=270, float r=5,int  numSegments=10) :DrawingObject(cx, cy) {
 		seg = (numSegments) * 2;
 		vrtc_head = new float[seg];
 		vrtc_body = new float[4];
 		vrtc_leg2 = new float[2];
 		vrtc_leg1 = new float[2];
+		memset(vrtc_head, 0x0, sizeof(vrtc_head) * seg);
 		rad = r;
+		
 		genCoords(x);
+		
+
 	}
 	void genCoords(float x) {
 		vrtc_body[0] = vrtc_body[2] = vrtc_leg1[0] = vrtc_leg2[0] = x;
@@ -65,18 +69,14 @@ public:
 		vrtc_leg1[0] = x - spread;
 		vrtc_leg2[0] = x + spread;
 		int n = 10 + rand();
-		n /= 10;
-		if (n < 1)
+		n %= 5;
+		if (n < 2)
 		{
-			Tvector = -1;
-			delay = -1 * n;
+			n = -2;
 		}
-		else
-		{
-			Tvector = 1;
-			delay = n;
-		}
-		memset(vrtc_head, 0x0, sizeof(vrtc_head) * seg);
+		
+		Tvector = n;
+		
 		int j;
 		for (int i = 0, j = 0; i < seg; i += 2, j++)
 		{
@@ -117,7 +117,7 @@ public:
 		
 		//while (!glfwWindowShouldClose(window))
 		//{
-			if (x > 800)
+			if (x > 900||x<-100)
 			{
 				resetPos();
 			}
@@ -140,9 +140,9 @@ public:
 	}
 	void resetPos()
 	{
-		x = 1;
+		x = -15;
 		genCoords(x);
-		
+		cout << "New speed: " << Tvector << endl;
 	}
 
 private:
@@ -259,6 +259,7 @@ public:
 
 	void drawTree()
 	{
+		glColor3f(0.0f, 1.0f,0.0f);
 		glLineWidth(1.2);
 		glBegin(GL_POLYGON);
 		for (int i = 0; i <= 18; i+=2)
@@ -311,7 +312,7 @@ void generateObject(float x) {
 
 
 	n = rand();
-	if (n % 2 == 0)
+	if (n % 3 >=2)
 	{
 		cout << "gen house" << endl;
 		unique_ptr<house> h1(new house(x, 300, 100));
@@ -366,8 +367,8 @@ int main()
 	glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
 //	glMatrixMode(GL_MODELVIEW);
 	//glLoadIdentity();
-	man m1 = man(100);
-	m1.set_speed(2.0f);
+	man mn[10];
+	mn[1].set_speed(0.0f);
 	 //house h1 = house(400,300,100);
 	// house* hp = &h1;
 
@@ -401,7 +402,7 @@ int main()
 		
 		
 		glfwPollEvents();
-		glColor3f(0.0f, 0.0f, 0.0f);
+		
 		glClear(GL_COLOR_BUFFER_BIT);
 		mnll* tptr = head;
 		
@@ -426,9 +427,14 @@ int main()
 			//cout << "ok" << endl;
 		
 		}
+		glColor3f(0.0f, 0.0f, 0.0f);
 		
 		
-		m1.drawMan();
+		for (int i = 0; i < 10; i++)
+		{
+			mn[i].drawMan();
+			mn[i].posUpdate();
+		}
 		
 		glBegin(GL_LINES);
 		glLineWidth(2);
@@ -438,7 +444,7 @@ int main()
 		glVertex2f(800, 200);
 
 		glEnd();
-		m1.posUpdate();
+		
 		glfwSwapBuffers(window);
 		
 		
@@ -446,7 +452,7 @@ int main()
 		{
 			if (head->houseNode->getFinX() < 0)
 			{
-				cout << "head overflow";
+			//	cout << "head overflow";
 				tptr = head;
 				head = head->next;
 				delete tptr;
@@ -457,7 +463,7 @@ int main()
 		{
 			if (head->treeNode->getFinX() < 0)
 			{
-				cout << "head overflow";
+				//cout << "head overflow";
 				tptr = head;
 				head = head->next;
 				delete tptr;
